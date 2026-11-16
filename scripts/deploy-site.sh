@@ -11,4 +11,4 @@ git -c user.name="Brakeline" -c user.email="dev@brakeline.invalid" add -A
 git -c user.name="Brakeline" -c user.email="dev@brakeline.invalid" commit -q -m "Publish website"
 git push -q -f "$URL" gh-pages
 rm -rf "$OUT"
-echo "Published → https://brakeline-devv.github.io/brakeline/"
+echo "Published mirror → https://brakeline-devv.github.io/brakeline/ (main site: https://brakeline.trade)"
