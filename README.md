@@ -36,12 +36,13 @@ Add the MCP server to your AI app:
 
 **Claude Code**
 ```
-claude mcp add brakeline -- node /path/to/brakeline/src/cli.js
+claude mcp add brakeline -- npx -y brakeline
 ```
+(from a clone: `claude mcp add brakeline -- node /path/to/brakeline/src/cli.js`)
 
 **Claude Desktop / Cursor** (`mcpServers` in the config file)
 ```json
-"brakeline": { "command": "node", "args": ["/path/to/brakeline/src/cli.js"] }
+"brakeline": { "command": "npx", "args": ["-y", "brakeline"] }
 ```
 
 Then ask your agent something like *"Buy 500 HOOD"* and watch it get stopped, or *"What's the most HOOD I can buy?"*
@@ -98,7 +99,8 @@ forwarded (it assumes they filled at the price sent), buys need a limit price, a
 
 | | |
 |---|---|
-| `node src/cli.js` | MCP server on stdio (what your AI app starts) |
+| `npx brakeline` | MCP server on stdio (what your AI app starts) |
+| `npx brakeline dashboard` | Website + dashboard, when installed from npm |
 | `npm start` | Website + dashboard on `localhost:5900` |
 | `npm run login` | Connect Robinhood |
 | `npm run demo` | Scripted run through every rule (puts your rules back afterwards) |
@@ -116,14 +118,19 @@ src/robinhood-auth.js   Robinhood OAuth
 src/server.js           website, dashboard and local API
 src/cli.js              command line entry
 web/                    website (index.html, config.js) and dashboard (app.html, app.js)
-data/rules.json         your rules; runtime state in data/ is git-ignored
+data/rules.json         default rules
 test/                   tests
 ```
+
+## Where state lives
+
+Rules, journal, simulated account and Robinhood login are kept in `./data` when you run from a clone, and in
+`~/.brakeline` when installed from npm (so they survive updates). Set `BRAKELINE_HOME` to use another folder.
 
 ## Security notes
 
 - The dashboard and its API listen on `127.0.0.1` only, and refuse requests sent from other websites.
-- Robinhood tokens are stored in `data/robinhood-auth.json` (git-ignored). Keep that file private.
+- Robinhood tokens are stored in `robinhood-auth.json` in the state folder (git-ignored). Keep that file private.
 - An agent with shell access (for example Claude Code) can still edit files on your computer, including the rules.
   For hard separation, run Brakeline with an AI app that has no shell, such as Claude Desktop.
 

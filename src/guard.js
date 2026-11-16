@@ -3,11 +3,12 @@
 // so they share state through small JSON files in data/.
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { dataFile } from "./paths.js";
 import { randomUUID } from "node:crypto";
 import { evaluate, loadRules, budgetOf } from "./rules.js";
 import * as sim from "./sim.js";
 
-const file = (n) => fileURLToPath(new URL(`../data/${n}`, import.meta.url));
+const file = (n) => dataFile(n);
 export const JOURNAL_FILE = file("journal.json"), PENDING_FILE = file("pending.json");
 const readJson = (f, d) => { if (!existsSync(f)) return d; try { return JSON.parse(readFileSync(f, "utf8")); } catch { return d; } };
 const round = (x) => Math.round(x * 100) / 100;

@@ -5,9 +5,10 @@ import { readFileSync, writeFileSync, existsSync, chmodSync } from "node:fs";
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { dataFile } from "./paths.js";
 
 export const UPSTREAM_URL = process.env.BRAKELINE_UPSTREAM_URL || "https://agent.robinhood.com/mcp/trading";
-const AUTH_FILE = fileURLToPath(new URL("../data/robinhood-auth.json", import.meta.url));
+const AUTH_FILE = dataFile("robinhood-auth.json");
 const PORT = Number(process.env.BRAKELINE_CALLBACK_PORT || 5901);
 const REDIRECT = `http://127.0.0.1:${PORT}/callback`;
 

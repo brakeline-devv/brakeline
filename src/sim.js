@@ -3,8 +3,9 @@
 // random-walk between quotes. State lives in data/sim.json.
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { dataFile } from "./paths.js";
 
-export const SIM_FILE = fileURLToPath(new URL("../data/sim.json", import.meta.url));
+export const SIM_FILE = dataFile("sim.json");
 const BASE = { AAPL: 228, MSFT: 415, NVDA: 182, TSLA: 248, AMZN: 201, GOOGL: 176, META: 590, AMD: 152, PLTR: 64, SPY: 590, QQQ: 510, COIN: 265, HOOD: 42 };
 export const SYMBOLS = Object.keys(BASE);
 const START_CASH = 100_000;

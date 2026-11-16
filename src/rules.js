@@ -2,8 +2,9 @@
 // Principle: a rule may only stop an order that ADDS risk (a buy). Selling down a position is never blocked.
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { dataFile } from "./paths.js";
 
-export const RULES_FILE = fileURLToPath(new URL("../data/rules.json", import.meta.url));
+export const RULES_FILE = dataFile("rules.json");
 
 export const DEFAULT_RULES = {
   maxDailyLossPct: 3,                 // no new buys once today's loss reaches 3% of start-of-day equity
