@@ -8,7 +8,7 @@ export default {
     { label: "How it works", href: "#how" },
     { label: "Rules", href: "#rules" },
     { label: "Install", href: "#install" },
-    { label: "Dashboard", href: "app" },
+    { label: "Dashboard", href: "app", local: true }, // only shown when the site runs on your own computer
   ],
   navCta: "Add to Claude",
 

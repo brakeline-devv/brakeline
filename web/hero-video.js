@@ -15,7 +15,8 @@ const inWin = (t, a, b) => (b >= a ? t >= a && t <= b : t >= a || t <= b);
 document.title = CFG.brand;
 document.querySelector(".logo").textContent = CFG.brand;
 document.querySelector(".btn-ghost").textContent = CFG.navCta;
-document.querySelector(".links").innerHTML = CFG.nav.map((n, i) => `<a href="${n.href}">${n.label}</a>`).join("");
+const isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
+document.querySelector(".links").innerHTML = CFG.nav.filter((n) => isLocal || !n.local).map((n, i) => `<a href="${n.href}">${n.label}</a>`).join("");
 const slides = {};
 for (const k of ["a", "b"]) {
   const s = CFG.slides[k], el = document.querySelector(`.slide-${k}`);

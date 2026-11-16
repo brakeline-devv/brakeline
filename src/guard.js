@@ -133,9 +133,12 @@ export function relayStatus() { return { ...statusFrom(relayContext(), loadRules
 // returns {allowed, reason, order} for an upstream order tool call
 export async function relayGate(toolName, a) {
   const side = String(a.side ?? a.action ?? a.direction ?? (/sell/i.test(toolName) ? "sell" : /buy/i.test(toolName) ? "buy" : "")).toLowerCase();
-  const o = { symbol: String(a.symbol ?? a.ticker ?? a.instrument ?? "").toUpperCase(), side, qty: Number(a.quantity ?? a.qty ?? a.shares), price: Number(a.limit_price ?? a.limitPrice ?? a.price) };
-  if (!o.symbol || !["buy", "sell"].includes(o.side) || !(o.qty > 0)) return { allowed: false, reason: "Brakeline could not read symbol/side/quantity from this order, so it fails closed." };
-  if (o.side === "buy" && !(o.price > 0)) return { allowed: false, order: o, reason: "Brakeline needs a limit price on buys in Robinhood mode so it can size the order." };
+  const o = { symbol: String(a.symbol ?? a.ticker ?? a.instrument ?? a.asset ?? "").toUpperCase(), side, qty: Number(a.quantity ?? a.qty ?? a.shares), price: Number(a.limit_price ?? a.limitPrice ?? a.price) };
+  // dollar-based orders ("buy $500 of NVDA"): size them by the dollar amount
+  const notional = Number(a.notional ?? a.amount ?? a.dollar_amount ?? a.dollars);
+  if (!(o.qty > 0) && notional > 0) { if (o.price > 0) o.qty = notional / o.price; else { o.qty = 1; o.price = notional; } o.notional = notional; }
+  if (!o.symbol || !["buy", "sell"].includes(o.side) || !(o.qty > 0)) return { allowed: false, reason: "Brakeline could not read symbol/side/size from this order, so it fails closed." };
+  if (o.side === "buy" && !(o.price > 0)) return { allowed: false, order: o, reason: "Brakeline needs a limit price (or a dollar amount) on buys in Robinhood mode so it can size the order." };
   if (!(Number(process.env.BRAKELINE_EQUITY) > 0)) return { allowed: false, order: o, reason: "Set BRAKELINE_EQUITY (your account value) for Robinhood mode." };
   const v = evaluate(o, relayContext());
   if (!v.allowed) return { ...v, order: o };

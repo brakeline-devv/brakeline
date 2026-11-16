@@ -1,6 +1,8 @@
 # Brakeline
 
-**Every order checked first.** Brakeline is a risk guardrail for AI trading agents: an MCP server that sits between
+**Every order checked first.** · [Website](https://brakeline-devv.github.io/brakeline/) · [npm](https://www.npmjs.com/package/brakeline)
+
+Brakeline is a risk guardrail for AI trading agents: an MCP server that sits between
 your agent (Claude, Cursor, any MCP client) and your broker, and checks every order against your rules before it can go through.
 
 ```
@@ -98,9 +100,21 @@ npm run login                                   # Robinhood's own sign-in (OAuth
 BRAKELINE_MODE=robinhood BRAKELINE_EQUITY=25000 node src/cli.js
 ```
 
-Order tools are checked first, everything else passes through unchanged. P&L is estimated from the orders Brakeline
-forwarded (it assumes they filled at the price sent), buys need a limit price, and orders it can't read are refused.
-**Not yet tested on a live account.**
+Brakeline sorts every Robinhood tool and **fails closed**:
+
+| Kind | How it's recognised | What happens |
+|---|---|---|
+| read | declares `readOnlyHint`, or name starts with get / list / search / view… | passes through |
+| cancel | name contains "cancel" | passes through (never adds risk) |
+| order | name looks like an order, **or** its inputs have a symbol and a size | checked against the rules first |
+| unknown | anything else | **refused**, never reaches Robinhood |
+
+`guard_status` shows how each Robinhood tool was classified. To let a refused tool through, set
+`BRAKELINE_ALLOW_TOOLS=name1,name2` (read-only) or `BRAKELINE_ORDER_TOOLS_LIST=name` (check it as an order).
+
+P&L is estimated from the orders Brakeline forwarded (it assumes they filled at the price sent). Buys need a limit price or
+a dollar amount, and orders it can't read are refused. The relay is tested against a fake broker MCP server
+(`test/relay.test.js`) but **not yet against a live Robinhood account.**
 
 ## Commands
 
@@ -112,12 +126,13 @@ forwarded (it assumes they filled at the price sent), buys need a limit price, a
 | `npm run login` | Connect Robinhood |
 | `npm run demo` | Scripted run through every rule (puts your rules back afterwards) |
 | `npm run reset` | Fresh simulated account, empty journal |
-| `npm test` | Rule engine tests |
+| `npm test` | Rule engine tests + Robinhood-mode relay tests against a fake broker |
 
 ## Project layout
 
 ```
 src/rules.js            rule engine (pure functions)
+src/classify.js         sorts broker tools into read / cancel / order / blocked
 src/guard.js            checks, approvals, journal, Robinhood ledger
 src/sim.js              simulated broker
 src/mcp.js              MCP server

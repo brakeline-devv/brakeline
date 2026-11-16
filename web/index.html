@@ -10,7 +10,8 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <meta property="og:title" content="Brakeline — every order checked first">
 <meta property="og:description" content="Risk rules your AI trading agent can't override. An MCP proxy for Claude and Cursor.">
-<meta property="og:image" content="media/poster.jpg">
+<meta property="og:image" content="https://brakeline-devv.github.io/brakeline/media/poster.jpg">
+<meta property="og:url" content="https://brakeline-devv.github.io/brakeline/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0b0a08">
 <link rel="stylesheet" href="style.css">
@@ -130,7 +131,7 @@ cd brakeline &amp;&amp; npm install &amp;&amp; npm start</pre></div>
       <h2>Practice first. Connect later.</h2>
       <div class="modes">
         <div class="card mode"><span class="tag">Default</span><h3>Simulation</h3><p>A simulated $100,000 account that starts from real closing prices for AAPL, MSFT, NVDA, TSLA, AMZN, GOOGL, META, AMD, PLTR, SPY, QQQ, COIN and HOOD. No broker account needed.</p><p>Try asking your agent: <strong>"Buy 500 HOOD"</strong>, then <strong>"What's my max size?"</strong></p></div>
-        <div class="card mode"><span class="tag exp">Experimental</span><h3>Robinhood</h3><p>Run <code>npm run login</code> once to connect your Robinhood account through Robinhood's own sign-in (OAuth). Brakeline then relays Robinhood's hosted trading MCP: order tools are checked first, everything else passes through unchanged.</p><p>P&amp;L is estimated from the orders Brakeline forwarded, buys need a limit price, and any order it can't read is refused. Not yet tested on a live account.</p></div>
+        <div class="card mode"><span class="tag exp">Experimental</span><h3>Robinhood</h3><p>Run <code>npm run login</code> once to connect your Robinhood account through Robinhood's own sign-in (OAuth). Brakeline then relays Robinhood's hosted trading MCP: order tools are checked first, everything else passes through unchanged.</p><p>Any Robinhood tool Brakeline doesn't recognise as a read, a cancel or an order is refused, so nothing slips past. P&amp;L is estimated from the orders Brakeline forwarded. Not yet tested on a live account.</p></div>
       </div>
     </div>
   </section>

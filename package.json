@@ -1,6 +1,6 @@
 {
   "name": "brakeline",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Risk guardrail proxy for AI trading agents: an MCP server that checks every order against your loss limits, position caps and revenge-trade rules before it reaches the broker (simulation or Robinhood).",
   "keywords": [
     "mcp",
@@ -41,9 +41,12 @@
     "login": "node src/cli.js login",
     "demo": "node src/cli.js demo",
     "reset": "node src/cli.js reset",
-    "test": "node --test test/rules.test.js"
+    "test": "node --test test/rules.test.js test/relay.test.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2"
+  },
+  "devDependencies": {
+    "zod": "^4.6.7"
   }
 }

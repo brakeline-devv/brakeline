@@ -7,6 +7,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import * as guard from "./guard.js";
 import { SYMBOLS, seedPrices } from "./sim.js";
+import { classifyTool } from "./classify.js";
 
 export async function startMcp() {
   const MODE = (process.env.BRAKELINE_MODE || "sim").toLowerCase();
@@ -21,7 +22,7 @@ export async function startMcp() {
   }, ["symbol", "side", "qty"]);
 
   const OWN = [
-    { name: "guard_status", description: "Brakeline's current risk rules, whether new buys are allowed right now (kill switch, cooldowns), which rules are tripped, the remaining daily loss budget, and whether orders need the human's approval in the dashboard. Call this before planning trades.", inputSchema: obj(), run: () => (MODE === "sim" ? guard.status() : guard.relayStatus()) },
+    { name: "guard_status", description: "Brakeline's current risk rules, whether new buys are allowed right now (kill switch, cooldowns), which rules are tripped, the remaining daily loss budget, and whether orders need the human's approval in the dashboard. Call this before planning trades.", inputSchema: obj(), run: () => (MODE === "sim" ? guard.status() : { ...guard.relayStatus(), brokerTools: Object.fromEntries([...kinds].map(([n, k]) => [n, k.kind])) }) },
     { name: "get_journal", description: "Recent orders Brakeline allowed, blocked or the human rejected, with the reason for each.", inputSchema: obj({ limit: { type: "integer", minimum: 1, maximum: 200 } }), run: (a) => guard.journal(a.limit ?? 20) },
   ];
   const SIM = [
@@ -33,7 +34,7 @@ export async function startMcp() {
 
   // ── Robinhood relay ───────────────────────────────────────────────────────
   let upstream = null, upstreamTools = [];
-  const ORDER_TOOL = new RegExp(process.env.BRAKELINE_ORDER_TOOLS || "(place|submit|create).*order|^(buy|sell)", "i");
+  const kinds = new Map(); // tool name → {kind, why}
   async function connectUpstream() {
     const { Client } = await import("@modelcontextprotocol/sdk/client/index.js");
     const { StreamableHTTPClientTransport } = await import("@modelcontextprotocol/sdk/client/streamableHttp.js");
@@ -43,14 +44,16 @@ export async function startMcp() {
     upstream = new Client({ name: "brakeline", version: "0.2.0" });
     await upstream.connect(new StreamableHTTPClientTransport(new URL(UPSTREAM_URL), opts));
     upstreamTools = (await upstream.listTools()).tools;
+    for (const t of upstreamTools) kinds.set(t.name, classifyTool(t));
   }
+  const TAG = { order: "[Checked by Brakeline risk rules]", block: "[Blocked by Brakeline: unknown tool, ask the human to allow it]" };
 
   const server = new Server({ name: "brakeline", version: "0.2.0" }, { capabilities: { tools: {} } });
   const local = () => [...OWN, ...(MODE === "sim" ? SIM : [])];
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: [...local().map(({ name, description, inputSchema }) => ({ name, description, inputSchema })),
-      ...upstreamTools.map((t) => (ORDER_TOOL.test(t.name) ? { ...t, description: `[Checked by Brakeline risk rules] ${t.description ?? ""}` } : t))],
+      ...upstreamTools.map((t) => { const k = kinds.get(t.name)?.kind; return TAG[k] ? { ...t, description: `${TAG[k]} ${t.description ?? ""}` } : t; })],
   }));
 
   server.setRequestHandler(CallToolRequestSchema, async ({ params: { name, arguments: args = {} } }) => {
@@ -58,7 +61,12 @@ export async function startMcp() {
       const own = local().find((t) => t.name === name);
       if (own) return text(await own.run(args));
       if (!upstream || !upstreamTools.some((t) => t.name === name)) return fail(`Unknown tool ${name}`);
-      if (ORDER_TOOL.test(name)) {
+      const kind = kinds.get(name)?.kind ?? "block";
+      if (kind === "block") {
+        guard.log({ mode: "robinhood", tool: name, order: args, verdict: "BLOCKED", reason: "unknown broker tool" });
+        return fail(`BLOCKED by Brakeline — "${name}" is not a known read, cancel or order tool, so it is refused. The human can allow it with BRAKELINE_ALLOW_TOOLS=${name} (read-only) or BRAKELINE_ORDER_TOOLS_LIST=${name} (check as an order).`);
+      }
+      if (kind === "order") {
         const v = await guard.relayGate(name, args);
         if (!v.allowed) {
           guard.log({ mode: "robinhood", tool: name, order: v.order ?? args, verdict: v.rejected ? "REJECTED" : "BLOCKED", reason: v.reason });
