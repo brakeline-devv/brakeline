@@ -16,6 +16,15 @@ export default {
   ],
   navCta: "Add to Claude",
 
+  // $BRAKE token strip under the hero. Hidden while `ca` is empty.
+  token: {
+    ticker: "$BRAKE",
+    chain: "Robinhood Chain",
+    ca: "", // contract address, e.g. "0x..."
+    buy: "https://www.ponsfamily.com/launchpad/", // + ca
+    explorer: "https://robinhoodchain.blockscout.com/token/", // + ca
+  },
+
   slides: {
     a: { lines: ["Fast.", "Guarded."], sub: "Risk rules your AI trading agent can't override.", cta: "Add to Claude" },
     b: {

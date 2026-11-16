@@ -13,6 +13,21 @@ function lin(keys, t) {
 const inWin = (t, a, b) => (b >= a ? t >= a && t <= b : t >= a || t <= b);
 
 document.title = CFG.brand;
+{ // token strip: shown only once a contract address is set in config.js
+  const T = CFG.token || {}, bar = document.getElementById("token");
+  if (bar && T.ca) {
+    bar.hidden = false;
+    bar.querySelector(".tk").textContent = `${T.ticker} · ${T.chain}`;
+    bar.querySelector("code").textContent = T.ca;
+    bar.querySelector(".buy").href = T.buy + T.ca;
+    bar.querySelector(".exp").href = T.explorer + T.ca;
+    const btn = bar.querySelector(".ca"), lab = bar.querySelector(".copy");
+    btn.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(T.ca); lab.textContent = "Copied"; } catch { lab.textContent = "Select & copy"; }
+      setTimeout(() => (lab.textContent = "Copy"), 1600);
+    });
+  }
+}
 document.querySelector(".logo").textContent = CFG.brand;
 document.querySelector(".btn-ghost").textContent = CFG.navCta;
 const isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
