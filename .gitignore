@@ -1,0 +1,5 @@
+node_modules/
+data/sim.json
+data/journal.json
+data/pending.json
+data/robinhood-auth.json

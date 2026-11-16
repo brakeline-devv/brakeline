@@ -1,0 +1,137 @@
+# Brakeline
+
+**Every order checked first.** Brakeline is a risk guardrail for AI trading agents: an MCP server that sits between
+your agent (Claude, Cursor, any MCP client) and your broker, and checks every order against your rules before it can go through.
+
+```
+Claude / Cursor  →  Brakeline rules (+ your approval)  →  Broker (simulation or Robinhood)
+```
+
+A guardrail MCP server running *next to* a broker MCP can only advise: the agent can still call the broker's order tool
+directly. Brakeline is a **proxy**. The agent connects only to Brakeline, and Brakeline holds the broker connection, so the
+rules are enforced, not suggested.
+
+## Features
+
+- **Five risk rules and a kill switch** (below), with the numbers in every reply: today's loss, the position's share of equity, minutes left on a cooldown, the largest size allowed.
+- **Selling is never blocked.** Rules only stop orders that add risk, so you can always get out.
+- **The agent can't change the rules.** It has no tool for it. You change them in the dashboard.
+- **Optional approval:** every order that passes the rules waits for your Approve / Reject click in the dashboard.
+- **Local dashboard** with the kill switch, the loss budget, positions and a journal of every order and why it was allowed or stopped.
+- **Simulation mode** with a $100,000 account that starts from real closing prices, so you can try it without a broker account.
+
+## Quick start
+
+Needs Node 20 or newer.
+
+```
+git clone https://github.com/<you>/brakeline.git
+cd brakeline
+npm install
+npm run demo      # scripted run through every rule
+npm start         # website http://localhost:5900 and dashboard http://localhost:5900/app
+```
+
+Add the MCP server to your AI app:
+
+**Claude Code**
+```
+claude mcp add brakeline -- node /path/to/brakeline/src/cli.js
+```
+
+**Claude Desktop / Cursor** (`mcpServers` in the config file)
+```json
+"brakeline": { "command": "node", "args": ["/path/to/brakeline/src/cli.js"] }
+```
+
+Then ask your agent something like *"Buy 500 HOOD"* and watch it get stopped, or *"What's the most HOOD I can buy?"*
+
+### Tools
+
+| Tool | What it does |
+|---|---|
+| `guard_status` | Current rules, whether buys are allowed right now, which rules are tripped, remaining loss budget |
+| `get_account` | Simulated cash, equity, today's P&L, positions |
+| `get_quote` | Latest simulated price |
+| `check_order` | Dry run: every check with its numbers, without placing anything |
+| `place_order` | Checks the rules, waits for your approval if enabled, then places the order |
+| `get_journal` | Recent orders with their verdict and reason |
+
+## Rules
+
+Edit them in the dashboard (or `data/rules.json`). They apply from the next order.
+
+| Rule | Blocks a buy when… | Default |
+|---|---|---|
+| `kill_switch` | you pressed **Pause all buys** | off |
+| `daily_loss_limit` | today's loss reached the limit | 3% of start-of-day equity |
+| `position_size` | the position would exceed the cap after the buy | 5% of equity |
+| `revenge_trade` | you re-buy a stock soon after selling it at a loss | 15 minutes |
+| `max_buys_per_day` | you hit the daily buy count | 10 |
+| `loss_streak_cooldown` | your last exits were all losses | 3 losses → 60 min pause |
+
+`approval`: `client` (the AI app's own permission prompt, default) or `dashboard` (each passing order waits for your click,
+90 s timeout).
+
+## Modes
+
+### Simulation (default)
+
+Simulated $100,000 account. Prices start from the latest real close (fetched once a day, built-in levels if offline) and
+move between quotes. Symbols: AAPL, MSFT, NVDA, TSLA, AMZN, GOOGL, META, AMD, PLTR, SPY, QQQ, COIN, HOOD.
+Market and limit orders (limit orders are immediate-or-cancel). `npm run reset` starts over.
+
+### Robinhood (experimental)
+
+Relays Robinhood's hosted trading MCP (`agent.robinhood.com/mcp/trading`).
+
+```
+npm run login                                   # Robinhood's own sign-in (OAuth + PKCE), once
+BRAKELINE_MODE=robinhood BRAKELINE_EQUITY=25000 node src/cli.js
+```
+
+Order tools are checked first, everything else passes through unchanged. P&L is estimated from the orders Brakeline
+forwarded (it assumes they filled at the price sent), buys need a limit price, and orders it can't read are refused.
+**Not yet tested on a live account.**
+
+## Commands
+
+| | |
+|---|---|
+| `node src/cli.js` | MCP server on stdio (what your AI app starts) |
+| `npm start` | Website + dashboard on `localhost:5900` |
+| `npm run login` | Connect Robinhood |
+| `npm run demo` | Scripted run through every rule (puts your rules back afterwards) |
+| `npm run reset` | Fresh simulated account, empty journal |
+| `npm test` | Rule engine tests |
+
+## Project layout
+
+```
+src/rules.js            rule engine (pure functions)
+src/guard.js            checks, approvals, journal, Robinhood ledger
+src/sim.js              simulated broker
+src/mcp.js              MCP server
+src/robinhood-auth.js   Robinhood OAuth
+src/server.js           website, dashboard and local API
+src/cli.js              command line entry
+web/                    website (index.html, config.js) and dashboard (app.html, app.js)
+data/rules.json         your rules; runtime state in data/ is git-ignored
+test/                   tests
+```
+
+## Security notes
+
+- The dashboard and its API listen on `127.0.0.1` only, and refuse requests sent from other websites.
+- Robinhood tokens are stored in `data/robinhood-auth.json` (git-ignored). Keep that file private.
+- An agent with shell access (for example Claude Code) can still edit files on your computer, including the rules.
+  For hard separation, run Brakeline with an AI app that has no shell, such as Claude Desktop.
+
+## Disclaimer
+
+Brakeline is an independent project, not affiliated with or endorsed by Robinhood. It is a risk tool, not investment
+advice. Use it at your own risk.
+
+## License
+
+MIT

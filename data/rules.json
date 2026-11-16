@@ -1,0 +1,13 @@
+{
+  "maxDailyLossPct": 3,
+  "maxPositionPct": 5,
+  "revengeWindowMin": 15,
+  "maxBuysPerDay": 10,
+  "lossStreak": {
+    "losses": 3,
+    "cooldownMin": 60
+  },
+  "killSwitch": false,
+  "approval": "client",
+  "approvalTimeoutSec": 90
+}

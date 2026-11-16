@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Brakeline Dashboard</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #0b0a08; --card: #15130f; --card2: #1b1813; --line: #2b261e; --fg: #f4efe6; --dim: #a59e91; --mute: #6f685c; --gold: #e8b25a; --red: #ef6b5b; --green: #7fcf8a; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--fg); font: 15px/1.5 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  button, input, select { font: inherit; color: inherit; }
+  .top { display: flex; align-items: center; gap: 14px; padding: 18px 24px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: rgba(11,10,8,.9); backdrop-filter: blur(10px); z-index: 5; }
+  .logo { font: 700 19px Montserrat, sans-serif; color: var(--fg); text-decoration: none; }
+  .crumb { color: var(--dim); }
+  .badge { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: rgba(127,207,138,.14); color: var(--green); }
+  .badge.rh { background: rgba(232,178,90,.14); color: var(--gold); }
+  .top .sp { flex: 1; }
+  .top a.site { color: var(--dim); text-decoration: none; font-size: 14px; }
+  .live { display: inline-flex; align-items: center; gap: 6px; color: var(--mute); font-size: 13px; }
+  .live i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .live.off i { background: var(--red); }
+  main { max-width: 1200px; margin: 0 auto; padding: 24px; display: grid; gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-width: 0; }
+  .card h2 { font-size: 13px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .big { font: 800 34px/1.05 Montserrat, sans-serif; letter-spacing: -.01em; }
+  .sub { color: var(--dim); font-size: 14px; margin-top: 6px; }
+  .pos { color: var(--green); } .neg { color: var(--red); }
+  .state { display: flex; align-items: center; gap: 10px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 5px rgba(127,207,138,.15); flex: none; }
+  .paused .dot { background: var(--red); box-shadow: 0 0 0 5px rgba(239,107,91,.15); }
+  .tripped { margin-top: 10px; display: grid; gap: 4px; }
+  .tripped div { font-size: 13px; color: var(--dim); font-family: "JetBrains Mono", monospace; }
+  .kill { margin-top: 16px; width: 100%; height: 46px; border-radius: 10px; border: 0; font-weight: 600; cursor: pointer; background: var(--red); color: #1a0d0b; transition: filter .15s, transform .1s; }
+  .kill:hover { filter: brightness(1.08); } .kill:active { transform: scale(.99); }
+  .kill.resume { background: var(--green); color: #0b1a0e; }
+  .bar { height: 8px; border-radius: 99px; background: var(--card2); margin-top: 14px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--gold); border-radius: 99px; transition: width .4s; }
+  .bar.hot i { background: var(--red); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-weight: 500; color: var(--mute); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; padding: 0 8px 8px; }
+  td { padding: 9px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .mono { font-family: "JetBrains Mono", monospace; font-size: 13px; }
+  .v { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; letter-spacing: .04em; white-space: nowrap; }
+  .v.FILLED, .v.FORWARDED { background: rgba(127,207,138,.14); color: var(--green); }
+  .v.BLOCKED, .v.REJECTED { background: rgba(239,107,91,.14); color: var(--red); }
+  .v.NOT_FILLED, .v.BROKER_ERROR { background: rgba(165,158,145,.14); color: var(--dim); }
+  .reason { color: var(--dim); font-size: 13px; }
+  .empty { color: var(--mute); padding: 18px 0 6px; font-size: 14px; }
+  .scroll { max-height: 420px; overflow: auto; }
+  .pending { border-color: rgba(232,178,90,.6); background: linear-gradient(160deg, rgba(232,178,90,.1), var(--card) 55%); }
+  .pend { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
+  .pend:first-of-type { border-top: 0; }
+  .pend .what { font: 700 20px Montserrat, sans-serif; flex: 1; min-width: 200px; }
+  .pend .what small { display: block; font: 500 13px Inter, sans-serif; color: var(--dim); margin-top: 2px; }
+  .btn { height: 40px; padding: 0 18px; border-radius: 9px; border: 1px solid var(--line); background: var(--card2); cursor: pointer; font-weight: 600; }
+  .btn:hover { border-color: #3d362b; }
+  .btn.ok { background: var(--green); color: #0b1a0e; border: 0; }
+  .btn.no { background: transparent; color: var(--red); border-color: rgba(239,107,91,.4); }
+  form.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+  label { display: grid; gap: 6px; font-size: 13px; color: var(--dim); }
+  input, select { width: 100%; min-width: 0; height: 40px; border-radius: 9px; border: 1px solid var(--line); background: var(--card2); padding: 0 12px; outline: none; }
+  input:focus, select:focus { border-color: var(--gold); }
+  .formfoot { display: flex; gap: 12px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+  .msg { font-size: 13px; color: var(--dim); }
+  .msg.err { color: var(--red); }
+  .link { background: none; border: 0; color: var(--mute); cursor: pointer; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+  .note { font-size: 13px; color: var(--mute); margin-top: 10px; }
+  @media (max-width: 900px) { .grid3, .row2 { grid-template-columns: 1fr; } main { padding: 16px; } .top { padding: 14px 16px; } .top .crumb, .live span { display: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="./">Brakeline</a><span class="crumb">/ Dashboard</span>
+  <span class="badge" id="mode">Simulation</span>
+  <span class="sp"></span>
+  <span class="live" id="live"><i></i><span>Live</span></span>
+  <a class="site" href="./">Website</a>
+</header>
+
+<main>
+  <section class="card pending" id="pendingCard" hidden>
+    <h2>Waiting for your approval <span id="pendCount"></span></h2>
+    <div id="pendList"></div>
+  </section>
+
+  <div class="grid3">
+    <section class="card" id="stateCard">
+      <h2>Buying</h2>
+      <div class="state"><span class="dot"></span><span class="big" id="stateText">—</span></div>
+      <div class="tripped" id="tripped"></div>
+      <button class="kill" id="kill">Pause all buys</button>
+    </section>
+    <section class="card">
+      <h2>Daily loss budget</h2>
+      <div class="big" id="budgetLeft">—</div>
+      <div class="sub" id="budgetSub">left today</div>
+      <div class="bar" id="budgetBar"><i style="width:0"></i></div>
+    </section>
+    <section class="card">
+      <h2>Account <span class="mono" id="acctMode"></span></h2>
+      <div class="big" id="equity">—</div>
+      <div class="sub" id="pnl">—</div>
+    </section>
+  </div>
+
+  <div class="row2">
+    <section class="card">
+      <h2>Journal <span class="mono" id="jCount"></span></h2>
+      <div class="scroll"><table><thead><tr><th>Time</th><th>Verdict</th><th>Order</th></tr></thead><tbody id="journal"></tbody></table></div>
+      <div class="empty" id="jEmpty">No orders yet. Ask your agent to buy something.</div>
+    </section>
+    <section class="card">
+      <h2>Positions</h2>
+      <table><thead><tr><th>Symbol</th><th class="num">Qty</th><th class="num">Avg</th><th class="num">Price</th><th class="num">P&amp;L</th><th class="num">% equity</th></tr></thead><tbody id="positions"></tbody></table>
+      <div class="empty" id="pEmpty">No open positions.</div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>Rules <span class="mono">only you can change these</span></h2>
+    <form class="rules" id="rules">
+      <label>Daily loss limit (% of equity)<input name="maxDailyLossPct" type="number" step="0.1" min="0.1"></label>
+      <label>Max position (% of equity)<input name="maxPositionPct" type="number" step="0.1" min="0.1"></label>
+      <label>Revenge window (min)<input name="revengeWindowMin" type="number" min="0"></label>
+      <label>Max buys per day<input name="maxBuysPerDay" type="number" min="0"></label>
+      <label>Loss streak (losing exits)<input name="losses" type="number" min="1"></label>
+      <label>Streak cooldown (min)<input name="cooldownMin" type="number" min="0"></label>
+      <label>Approve each order<select name="approval"><option value="client">In the AI app</option><option value="dashboard">Here in the dashboard</option></select></label>
+      <label>Approval timeout (s)<input name="approvalTimeoutSec" type="number" min="10" max="600"></label>
+    </form>
+    <div class="formfoot"><button class="btn ok" id="save" type="button">Save rules</button><span class="msg" id="msg"></span><span class="sp" style="flex:1"></span><button class="link" id="reset" type="button">Reset simulated account</button></div>
+    <p class="note">Agents that have shell access (for example Claude Code) can still edit files on this computer. For hard separation, run Brakeline where the agent has no shell, like Claude Desktop.</p>
+  </section>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
