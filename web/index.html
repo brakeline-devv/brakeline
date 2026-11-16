@@ -107,19 +107,20 @@
     <div class="wrap">
       <p class="eyebrow">Install</p>
       <h2>One line in Claude.</h2>
-      <p class="lead">Needs Node 20 or newer. Get the code from <a href="https://github.com/brakeline-devv/brakeline" style="color:var(--gold)">GitHub</a>, add the server to your AI app, then run <code>npm start</code> for the dashboard.</p>
-      <div class="install" style="margin-top:32px;grid-template-columns:1fr"><div class="code"><h3>Get the code</h3><pre>git clone https://github.com/brakeline-devv/brakeline.git
-cd brakeline &amp;&amp; npm install</pre></div></div>
+      <p class="lead">Needs Node 20 or newer. Nothing to clone: npm fetches Brakeline when your AI app starts it.</p>
       <div class="install">
-        <div class="code"><h3>Claude Code</h3><pre>claude mcp add brakeline -- \
-  node /path/to/brakeline/src/mcp.js</pre></div>
+        <div class="code"><h3>Claude Code</h3><pre>claude mcp add brakeline -- npx -y brakeline</pre></div>
         <div class="code"><h3>Claude Desktop / Cursor</h3><pre><span class="c">// mcpServers in the config file</span>
 "brakeline": {
-  "command": "node",
-  "args": ["/path/to/brakeline/src/mcp.js"]
+  "command": "npx",
+  "args": ["-y", "brakeline"]
 }</pre></div>
+        <div class="code"><h3>Dashboard</h3><pre>npx brakeline dashboard
+<span class="c"># then open localhost:5900/app</span></pre></div>
+        <div class="code"><h3>From source</h3><pre>git clone https://github.com/brakeline-devv/brakeline.git
+cd brakeline &amp;&amp; npm install &amp;&amp; npm start</pre></div>
       </div>
-      <p class="tools">Tools: <code>guard_status</code><code>get_account</code><code>get_quote</code><code>check_order</code><code>place_order</code><code>get_journal</code></p>
+      <p class="tools">Tools: <code>guard_status</code><code>get_account</code><code>get_quote</code><code>check_order</code><code>place_order</code><code>get_journal</code> · <a href="https://www.npmjs.com/package/brakeline" style="color:var(--gold)">npm</a> · <a href="https://github.com/brakeline-devv/brakeline" style="color:var(--gold)">GitHub</a></p>
     </div>
   </section>
 

@@ -22,7 +22,14 @@ rules are enforced, not suggested.
 
 ## Quick start
 
-Needs Node 20 or newer.
+Needs Node 20 or newer. Published on npm as [`brakeline`](https://www.npmjs.com/package/brakeline).
+
+```
+claude mcp add brakeline -- npx -y brakeline     # Claude Code
+npx brakeline dashboard                          # dashboard on localhost:5900/app
+```
+
+From source:
 
 ```
 git clone https://github.com/brakeline-devv/brakeline.git
