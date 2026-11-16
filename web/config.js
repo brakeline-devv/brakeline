@@ -9,7 +9,7 @@ export default {
     { label: "Rules", href: "#rules" },
     { label: "Install", href: "#install" },
     // external links (icon + label, open in a new tab). X stays hidden until its URL is filled in.
-    { label: "X", icon: "x", href: "", ext: true }, // e.g. "https://x.com/brakelinetrade"
+    { label: "X", icon: "x", href: "https://x.com/brakelinetrade", ext: true },
     { label: "CLI", icon: "cli", href: "https://www.npmjs.com/package/brakeline", ext: true },
     { label: "GitHub", icon: "github", href: "https://github.com/brakeline-devv/brakeline", ext: true },
     { label: "Dashboard", href: "app", local: true }, // only shown when the site runs on your own computer

@@ -1,6 +1,6 @@
 # Brakeline
 
-**Every order checked first.** · [Website](https://brakeline.trade) · [npm](https://www.npmjs.com/package/brakeline)
+**Every order checked first.** · [Website](https://brakeline.trade) · [npm](https://www.npmjs.com/package/brakeline) · [X](https://x.com/brakelinetrade)
 
 Brakeline is a risk guardrail for AI trading agents: an MCP server that sits between
 your agent (Claude, Cursor, any MCP client) and your broker, and checks every order against your rules before it can go through.
