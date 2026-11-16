@@ -25,7 +25,7 @@ rules are enforced, not suggested.
 Needs Node 20 or newer.
 
 ```
-git clone https://github.com/<you>/brakeline.git
+git clone https://github.com/brakeline-devv/brakeline.git
 cd brakeline
 npm install
 npm run demo      # scripted run through every rule
