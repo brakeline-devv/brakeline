@@ -20,7 +20,7 @@ export default {
   token: {
     ticker: "$BRAKE",
     chain: "Robinhood Chain",
-    ca: "", // contract address, e.g. "0x..."
+    ca: "0xa1ef9a0a5cf1fd530aff93130dd3dc16957677a4",
     buy: "https://www.ponsfamily.com/launchpad/", // + ca
     explorer: "https://robinhoodchain.blockscout.com/token/", // + ca
   },
