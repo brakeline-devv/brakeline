@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Brakeline</title>
+<meta name="description" content="Brakeline is a risk guardrail for AI trading agents: an MCP proxy that checks every order against your loss limits, position caps and revenge-trade rules. Not affiliated with Robinhood.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.ico" sizes="any"><link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32"><link rel="icon" href="favicon-192.png" type="image/png" sizes="192x192"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:title" content="Brakeline — every order checked first">
+<meta property="og:description" content="Risk rules your AI trading agent can't override. An MCP proxy for Claude and Cursor.">
+<meta property="og:image" content="https://brakeline.trade/media/poster.jpg">
+<meta property="og:url" content="https://brakeline.trade/">
+<link rel="canonical" href="https://brakeline.trade/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@brakelinetrade">
+<meta name="theme-color" content="#0b0a08">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <a class="logo" href="#top">Brakeline</a>
+  <nav class="links"></nav>
+  <a class="btn-ghost" href="#install">Add to Claude</a>
+</header>
+
+<div class="hero" id="top">
+  <video id="bg" src="media/hero.mp4" muted playsinline preload="auto" poster="media/poster.jpg"></video>
+  <div id="fade"></div>
+  <section class="slide slide-a">
+    <h1></h1>
+    <div class="row">
+      <p class="sub"></p>
+      <div class="actions"><a class="btn-white cta" href="#install">Add to Claude</a></div>
+    </div>
+  </section>
+  <section class="slide slide-b">
+    <h1></h1>
+    <div class="row">
+      <p class="sub"></p>
+      <div class="actions"></div>
+    </div>
+  </section>
+  <a class="scroll-cue" href="#how" aria-label="Scroll down"></a>
+</div>
+
+<main>
+  <div class="token-bar" id="token" hidden>
+    <div class="wrap">
+      <span class="tk"></span>
+      <button class="ca" type="button" title="Copy contract address"><code></code><span class="copy">Copy</span></button>
+      <span class="tlinks"><a class="buy" target="_blank" rel="noopener">Buy on Pons</a><a class="exp" target="_blank" rel="noopener">Explorer</a></span>
+      <span class="note">Only trust this CA, posted here and on @brakelinetrade.</span>
+    </div>
+  </div>
+  <section class="block" id="how">
+    <div class="wrap">
+      <p class="eyebrow">How it works</p>
+      <h2>A brake between your agent and your broker.</h2>
+      <p class="lead">An ordinary "guardrail" MCP server only <em>advises</em>. Your agent can still call the broker's order tool directly. Brakeline is a <strong>proxy</strong>: the agent connects only to Brakeline, and Brakeline holds the broker connection. Blocking is enforced, not suggested.</p>
+      <div class="flow">
+        <div class="node"><small>1 · Your agent</small><h3>Claude or Cursor</h3><p>Plans a trade and calls <code>place_order</code>, the same as with any broker MCP.</p></div>
+        <div class="arrow">→</div>
+        <div class="node key"><small>2 · Brakeline</small><h3>Checks your rules</h3><p>Loss limit, size cap, revenge window, buy count, loss streak. Any failure stops the order and says why.</p></div>
+        <div class="arrow">→</div>
+        <div class="node"><small>3 · Broker</small><h3>Simulation or Robinhood</h3><p>Only orders that pass reach the broker. Every verdict goes into the journal.</p></div>
+      </div>
+      <div class="principles">
+        <div><h4>Selling is never blocked</h4><p>Rules only stop orders that add risk. Cutting a loss or taking profit always goes through.</p></div>
+        <div><h4>The agent can't change the rules</h4><p>There is no tool for it. Only you change them, in the dashboard, and they apply from the next order.</p></div>
+        <div><h4>Every block explains itself</h4><p>The reply carries the numbers: today's loss, the position's share of equity, minutes left on a cooldown, the max size allowed.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="rules">
+    <div class="wrap">
+      <p class="eyebrow">Rules</p>
+      <h2>Five brakes and a kill switch.</h2>
+      <p class="lead">The defaults follow common retail risk rules. Change any number in the dashboard, and hit one button to pause every buy.</p>
+      <div class="rules">
+        <div class="card"><div class="val">3%<span>/ day</span></div><code>daily_loss_limit</code><p>No new buys once today's loss reaches 3% of your start-of-day equity.</p></div>
+        <div class="card"><div class="val">5%<span>max</span></div><code>position_size</code><p>No single stock above 5% of equity (broad funds like SPY or VTI: 30%). A blocked order is told the largest size it may buy instead.</p></div>
+        <div class="card"><div class="val">15<span>min</span></div><code>revenge_trade</code><p>No buying a stock back within 15 minutes of selling it at a loss.</p></div>
+        <div class="card"><div class="val">10<span>buys / day</span></div><code>max_buys_per_day</code><p>Caps overtrading when the agent gets busy.</p></div>
+        <div class="card"><div class="val">3<span>losses → 60 min</span></div><code>loss_streak_cooldown</code><p>Three losing exits in a row pause all new buys for an hour.</p></div>
+        <div class="card"><div class="val">1<span>click</span></div><code>kill_switch</code><p>Pause all buys from the dashboard, instantly, until you turn it back on.</p></div>
+        <div class="card always"><div class="val">Always</div><code>reduce_only</code><p><strong>Sells that reduce a position always pass.</strong> Brakeline never traps you in a trade.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="demo">
+    <div class="wrap">
+      <p class="eyebrow">See it work</p>
+      <h2>What your agent hears back.</h2>
+      <p class="lead">A real run on the simulated $100k account (<code>npm run demo</code>).</p>
+      <div class="term"><div class="term-bar"><i></i><i></i><i></i></div><pre>
+<span class="l"><span class="you">› buy 20 AAPL</span></span><span class="l"><span class="ok">  ✔ FILLED</span>  @ 228.00  · 4.5% of equity</span><span class="l"><span class="you">› buy 40 NVDA</span></span><span class="l"><span class="no">  ✖ BLOCKED</span> position_size: NVDA would be 7.28% of equity, cap 5% <span class="gold">(max buy now: 27)</span></span><span class="l"><span class="you">› sell 20 AAPL</span>   <span class="c"># AAPL fell 6%</span></span><span class="l"><span class="ok">  ✔ FILLED</span>  @ 214.32  · pnl -273.60 · reducing risk is always allowed</span><span class="l"><span class="you">› buy 10 AAPL</span>    <span class="c"># right back in</span></span><span class="l"><span class="no">  ✖ BLOCKED</span> revenge_trade: AAPL was sold at a loss 0 min ago <span class="gold">(15 min left)</span></span><span class="l"><span class="you">› buy 5 MSFT</span>     <span class="c"># you hit "Pause all buys" in the dashboard</span></span><span class="l"><span class="no">  ✖ BLOCKED</span> kill_switch: a human has paused all buys</span><span class="l"><span class="you">› sell 25 NVDA</span></span><span class="l"><span class="ok">  ✔ FILLED</span>  @ 182.00  · selling still works</span><span class="l"><span class="you">› buy 5 MSFT</span>     <span class="c"># four positions fell 20%</span></span><span class="l"><span class="no">  ✖ BLOCKED</span> daily_loss_limit: today -3,902.40 (-3.9%), limit -3%</span></pre></div>
+    </div>
+  </section>
+
+  <section class="block" id="dashboard">
+    <div class="wrap">
+      <p class="eyebrow">Dashboard</p>
+      <h2>You stay in the driver's seat.</h2>
+      <p class="lead">A local dashboard at <code>localhost:5900/app</code> shows every order the agent tried, what got through and why the rest were stopped.</p>
+      <div class="principles">
+        <div><h4>Kill switch</h4><p>One button pauses all buys. Selling stays open so you can always get out.</p></div>
+        <div><h4>Approve each order</h4><p>Turn on dashboard approval and every order that passes the rules waits for your click before it reaches the broker.</p></div>
+        <div><h4>Live budget</h4><p>Today's loss budget, position sizes and the full journal, refreshed every second and a half.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="install">
+    <div class="wrap">
+      <p class="eyebrow">Install</p>
+      <h2>One line in Claude.</h2>
+      <p class="lead">Needs Node 20 or newer. Nothing to clone: npm fetches Brakeline when your AI app starts it.</p>
+      <div class="install">
+        <div class="code"><h3>Claude Code</h3><pre>claude mcp add brakeline -- npx -y brakeline</pre></div>
+        <div class="code"><h3>Claude Desktop / Cursor</h3><pre><span class="c">// mcpServers in the config file</span>
+"brakeline": {
+  "command": "npx",
+  "args": ["-y", "brakeline"]
+}</pre></div>
+        <div class="code"><h3>Dashboard</h3><pre>npx brakeline dashboard
+<span class="c"># then open localhost:5900/app</span></pre></div>
+        <div class="code"><h3>From source</h3><pre>git clone https://github.com/brakeline-devv/brakeline.git
+cd brakeline &amp;&amp; npm install &amp;&amp; npm start</pre></div>
+      </div>
+      <p class="tools">Tools: <code>guard_status</code><code>get_account</code><code>get_quote</code><code>check_order</code><code>place_order</code><code>get_journal</code> · <a href="https://www.npmjs.com/package/brakeline" style="color:var(--gold)">npm</a> · <a href="https://github.com/brakeline-devv/brakeline" style="color:var(--gold)">GitHub</a></p>
+    </div>
+  </section>
+
+  <section class="block" id="modes">
+    <div class="wrap">
+      <p class="eyebrow">Modes</p>
+      <h2>Practice first. Connect later.</h2>
+      <div class="modes">
+        <div class="card mode"><span class="tag">Default</span><h3>Simulation</h3><p>A simulated $100,000 account that starts from real closing prices for AAPL, MSFT, NVDA, TSLA, AMZN, GOOGL, META, AMD, PLTR, COIN, HOOD and the funds SPY, QQQ, VTI, BND and GLD. No broker account needed.</p><p>Try asking your agent: <strong>"Buy 500 HOOD"</strong>, then <strong>"What's my max size?"</strong></p></div>
+        <div class="card mode"><span class="tag exp">Experimental</span><h3>Robinhood</h3><p>Run <code>npm run login</code> once to connect your Robinhood account through Robinhood's own sign-in (OAuth). Brakeline then relays Robinhood's hosted trading MCP: order tools are checked first, everything else passes through unchanged.</p><p>Any Robinhood tool Brakeline doesn't recognise as a read, a cancel or an order is refused, so nothing slips past. P&amp;L is estimated from the orders Brakeline forwarded. Not yet tested on a live account.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block cta-end">
+    <div class="wrap">
+      <h2>Let your agent trade. Keep the brakes.</h2>
+      <p class="lead">Start in simulation, tune your rules, then connect your broker.</p>
+      <a class="btn-white" href="#install">Add to Claude</a>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span>© Brakeline · <a href="https://github.com/brakeline-devv/brakeline">GitHub</a> · <a href="https://www.npmjs.com/package/brakeline">npm</a> · <a href="https://x.com/brakelinetrade">X</a></span><span>Independent project, not affiliated with or endorsed by Robinhood. A risk tool, not investment advice.</span></div></footer>
+
+<script type="module" src="hero-video.js"></script>
+</body>
+</html>
