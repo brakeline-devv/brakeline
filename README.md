@@ -75,7 +75,7 @@ Edit them in the dashboard (or `data/rules.json`). They apply from the next orde
 |---|---|---|
 | `kill_switch` | you pressed **Pause all buys** | off |
 | `daily_loss_limit` | today's loss reached the limit | 3% of start-of-day equity |
-| `position_size` | the position would exceed the cap after the buy | 5% of equity |
+| `position_size` | the position would exceed the cap after the buy | 5% of equity · 30% for broad funds (SPY, VOO, VTI, QQQ, DIA, IWM, BND, AGG, TLT, GLD…) |
 | `revenge_trade` | you re-buy a stock soon after selling it at a loss | 15 minutes |
 | `max_buys_per_day` | you hit the daily buy count | 10 |
 | `loss_streak_cooldown` | your last exits were all losses | 3 losses → 60 min pause |

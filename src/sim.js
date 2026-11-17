@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { dataFile } from "./paths.js";
 
 export const SIM_FILE = dataFile("sim.json");
-const BASE = { AAPL: 228, MSFT: 415, NVDA: 182, TSLA: 248, AMZN: 201, GOOGL: 176, META: 590, AMD: 152, PLTR: 64, SPY: 590, QQQ: 510, COIN: 265, HOOD: 42 };
+const BASE = { AAPL: 228, MSFT: 415, NVDA: 182, TSLA: 248, AMZN: 201, GOOGL: 176, META: 590, AMD: 152, PLTR: 64, SPY: 590, QQQ: 510, COIN: 265, HOOD: 42, VTI: 330, BND: 73, GLD: 380 };
 export const SYMBOLS = Object.keys(BASE);
 const START_CASH = 100_000;
 const round = (x, d = 2) => Math.round(x * 10 ** d) / 10 ** d;

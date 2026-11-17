@@ -65,7 +65,7 @@ function render(s) {
   // rules form (don't overwrite what the human is typing)
   if (!formDirty) {
     const f = $("rules").elements;
-    for (const k of ["maxDailyLossPct", "maxPositionPct", "revengeWindowMin", "maxBuysPerDay", "approval", "approvalTimeoutSec"]) f[k].value = rules[k];
+    for (const k of ["maxDailyLossPct", "maxPositionPct", "maxFundPositionPct", "revengeWindowMin", "maxBuysPerDay", "approval", "approvalTimeoutSec"]) f[k].value = rules[k];
     f.losses.value = rules.lossStreak.losses; f.cooldownMin.value = rules.lossStreak.cooldownMin;
   }
 }
@@ -85,7 +85,7 @@ $("rules").oninput = () => { formDirty = true; $("msg").textContent = "Unsaved c
 $("save").onclick = async () => {
   const f = $("rules").elements;
   try {
-    await post("/api/rules", { maxDailyLossPct: f.maxDailyLossPct.value, maxPositionPct: f.maxPositionPct.value, revengeWindowMin: f.revengeWindowMin.value, maxBuysPerDay: f.maxBuysPerDay.value, approval: f.approval.value, approvalTimeoutSec: f.approvalTimeoutSec.value, lossStreak: { losses: f.losses.value, cooldownMin: f.cooldownMin.value } });
+    await post("/api/rules", { maxDailyLossPct: f.maxDailyLossPct.value, maxPositionPct: f.maxPositionPct.value, maxFundPositionPct: f.maxFundPositionPct.value, revengeWindowMin: f.revengeWindowMin.value, maxBuysPerDay: f.maxBuysPerDay.value, approval: f.approval.value, approvalTimeoutSec: f.approvalTimeoutSec.value, lossStreak: { losses: f.losses.value, cooldownMin: f.cooldownMin.value } });
     formDirty = false; $("msg").textContent = "Saved. Brakeline uses the new rules on the next order."; $("msg").className = "msg"; tick();
   } catch (err) { $("msg").textContent = err.message; $("msg").className = "msg err"; }
 };

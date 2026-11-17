@@ -81,7 +81,7 @@
       <p class="lead">The defaults follow common retail risk rules. Change any number in the dashboard, and hit one button to pause every buy.</p>
       <div class="rules">
         <div class="card"><div class="val">3%<span>/ day</span></div><code>daily_loss_limit</code><p>No new buys once today's loss reaches 3% of your start-of-day equity.</p></div>
-        <div class="card"><div class="val">5%<span>max</span></div><code>position_size</code><p>No single position above 5% of equity. A blocked order is told the largest size it may buy instead.</p></div>
+        <div class="card"><div class="val">5%<span>max</span></div><code>position_size</code><p>No single stock above 5% of equity (broad funds like SPY or VTI: 30%). A blocked order is told the largest size it may buy instead.</p></div>
         <div class="card"><div class="val">15<span>min</span></div><code>revenge_trade</code><p>No buying a stock back within 15 minutes of selling it at a loss.</p></div>
         <div class="card"><div class="val">10<span>buys / day</span></div><code>max_buys_per_day</code><p>Caps overtrading when the agent gets busy.</p></div>
         <div class="card"><div class="val">3<span>losses → 60 min</span></div><code>loss_streak_cooldown</code><p>Three losing exits in a row pause all new buys for an hour.</p></div>
@@ -140,7 +140,7 @@ cd brakeline &amp;&amp; npm install &amp;&amp; npm start</pre></div>
       <p class="eyebrow">Modes</p>
       <h2>Practice first. Connect later.</h2>
       <div class="modes">
-        <div class="card mode"><span class="tag">Default</span><h3>Simulation</h3><p>A simulated $100,000 account that starts from real closing prices for AAPL, MSFT, NVDA, TSLA, AMZN, GOOGL, META, AMD, PLTR, SPY, QQQ, COIN and HOOD. No broker account needed.</p><p>Try asking your agent: <strong>"Buy 500 HOOD"</strong>, then <strong>"What's my max size?"</strong></p></div>
+        <div class="card mode"><span class="tag">Default</span><h3>Simulation</h3><p>A simulated $100,000 account that starts from real closing prices for AAPL, MSFT, NVDA, TSLA, AMZN, GOOGL, META, AMD, PLTR, COIN, HOOD and the funds SPY, QQQ, VTI, BND and GLD. No broker account needed.</p><p>Try asking your agent: <strong>"Buy 500 HOOD"</strong>, then <strong>"What's my max size?"</strong></p></div>
         <div class="card mode"><span class="tag exp">Experimental</span><h3>Robinhood</h3><p>Run <code>npm run login</code> once to connect your Robinhood account through Robinhood's own sign-in (OAuth). Brakeline then relays Robinhood's hosted trading MCP: order tools are checked first, everything else passes through unchanged.</p><p>Any Robinhood tool Brakeline doesn't recognise as a read, a cancel or an order is refused, so nothing slips past. P&amp;L is estimated from the orders Brakeline forwarded. Not yet tested on a live account.</p></div>
       </div>
     </div>

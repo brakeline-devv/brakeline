@@ -25,6 +25,12 @@ test("position size counts what is already held and reports the max buy", () => 
   assert.match(v.checks.find((c) => c.rule === "position_size").detail, /max buy now: 5\b/);
 });
 
+test("broad funds get the wider fund cap, single stocks keep the 5% cap", () => {
+  assert.equal(evaluate(buy(250, 100, "SPY"), ctx(), R).allowed, true);          // 25% in SPY: under the 30% fund cap
+  assert.deepEqual(failed(evaluate(buy(350, 100, "SPY"), ctx(), R)), ["position_size"]); // 35%
+  assert.deepEqual(failed(evaluate(buy(250, 100, "NVDA"), ctx(), R)), ["position_size"]);
+});
+
 test("revenge trade: blocked inside the window, allowed after it, other symbols unaffected", () => {
   const fills = [{ t: NOW - 5 * MIN, symbol: "AAPL", side: "sell", qty: 10, price: 90, pnl: -100 }];
   assert.deepEqual(failed(evaluate(buy(), ctx({ fills }), R)), ["revenge_trade"]);

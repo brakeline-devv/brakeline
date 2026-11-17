@@ -6,9 +6,13 @@ import { dataFile } from "./paths.js";
 
 export const RULES_FILE = dataFile("rules.json");
 
+// Broad, diversified funds: a single ticker but hundreds of holdings, so the per-position cap is wider.
+export const FUNDS = new Set(["SPY", "VOO", "IVV", "VTI", "QQQ", "DIA", "IWM", "BND", "AGG", "TLT", "SHY", "SGOV", "GLD", "IAU"]);
+
 export const DEFAULT_RULES = {
   maxDailyLossPct: 3,                 // no new buys once today's loss reaches 3% of start-of-day equity
   maxPositionPct: 5,                  // a position may not exceed 5% of equity after the buy
+  maxFundPositionPct: 30,             // broad index / bond / gold funds (they hold hundreds of names) get a wider cap
   revengeWindowMin: 15,               // no re-buy of a symbol within 15 min of closing it at a loss
   maxBuysPerDay: 10,                  // overtrading cap
   lossStreak: { losses: 3, cooldownMin: 60 }, // 3 losing sells in a row → no buys for 60 min
@@ -21,7 +25,7 @@ export const DEFAULT_RULES = {
 export function saveRules(patch) {
   const r = { ...loadRules() };
   const num = (k, min, max) => { if (patch[k] != null) { const v = Number(patch[k]); if (!(v >= min && v <= max)) throw new Error(`${k} must be between ${min} and ${max}`); r[k] = v; } };
-  num("maxDailyLossPct", 0.1, 100); num("maxPositionPct", 0.1, 100); num("revengeWindowMin", 0, 1440); num("maxBuysPerDay", 0, 1000); num("approvalTimeoutSec", 10, 600);
+  num("maxDailyLossPct", 0.1, 100); num("maxPositionPct", 0.1, 100); num("maxFundPositionPct", 0.1, 100); num("revengeWindowMin", 0, 1440); num("maxBuysPerDay", 0, 1000); num("approvalTimeoutSec", 10, 600);
   if (patch.lossStreak) {
     const l = Number(patch.lossStreak.losses), c = Number(patch.lossStreak.cooldownMin);
     if (!(l >= 1 && l <= 20 && c >= 0 && c <= 1440)) throw new Error("lossStreak: losses 1-20, cooldownMin 0-1440");
@@ -71,11 +75,12 @@ export function evaluate(order, ctx, rules = loadRules()) {
     `today ${dayPnl >= 0 ? "+" : ""}${pct(dayPnl)} (${pct(-dayLossPct)}%), limit -${rules.maxDailyLossPct}%`);
 
   // 2. position size
+  const fund = FUNDS.has(sym), cap = fund ? (rules.maxFundPositionPct ?? rules.maxPositionPct) : rules.maxPositionPct;
   const after = (held + order.qty) * order.price;
   const afterPct = equity > 0 ? (after / equity) * 100 : 100;
-  const maxQty = Math.max(0, Math.floor(((rules.maxPositionPct / 100) * equity) / order.price - held));
-  add("position_size", afterPct <= rules.maxPositionPct,
-    `${sym} would be ${pct(afterPct)}% of equity, cap ${rules.maxPositionPct}% (max buy now: ${maxQty})`);
+  const maxQty = Math.max(0, Math.floor(((cap / 100) * equity) / order.price - held));
+  add("position_size", afterPct <= cap,
+    `${sym} would be ${pct(afterPct)}% of equity, cap ${cap}%${fund ? " (broad fund)" : ""} (max buy now: ${maxQty})`);
 
   // 3. revenge trade: same symbol closed at a loss within the window
   const lastLoss = [...fills].reverse().find((f) => f.symbol === sym && f.side === "sell" && f.pnl < 0);
