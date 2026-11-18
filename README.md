@@ -88,7 +88,7 @@ Edit them in the dashboard (or `data/rules.json`). They apply from the next orde
 ### Simulation (default)
 
 Simulated $100,000 account. Prices start from the latest real close (fetched once a day, built-in levels if offline) and
-move between quotes. Symbols: AAPL, MSFT, NVDA, TSLA, AMZN, GOOGL, META, AMD, PLTR, COIN, HOOD and the funds SPY, QQQ, VTI, BND, GLD.
+move between quotes. Built-in symbols: AAPL, MSFT, NVDA, TSLA, AMZN, GOOGL, META, AMD, PLTR, COIN, HOOD and the funds SPY, QQQ, VTI, BND, GLD. Any other US stock or ETF is added on first use from its last real close.
 Market and limit orders (limit orders are immediate-or-cancel). `npm run reset` starts over.
 
 ### Robinhood (experimental)

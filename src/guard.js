@@ -72,10 +72,12 @@ export function simAccount() {
     budget: budgetOf(sim.context(s), loadRules()),
   };
 }
-export function simQuote(symbol) { const s = simState(); return { symbol: symbol.toUpperCase(), price: sim.quote(s, symbol), simulated: true }; }
+export async function simQuote(symbol) { await sim.addSymbol(symbol); const s = simState(); return { symbol: symbol.toUpperCase(), price: sim.quote(s, symbol), simulated: true }; }
 
-export function simCheck(raw) {
-  const o = normOrder(raw), s = simState();
+export async function simCheck(raw) {
+  const o = normOrder(raw);
+  await sim.addSymbol(o.symbol);
+  const s = simState();
   const price = sim.quote(s, o.symbol);
   // size the order at the worse of market and limit, so a high limit can't sneak past the size cap
   const sizing = o.side === "buy" && o.limit ? Math.max(price, o.limit) : price;
@@ -83,7 +85,7 @@ export function simCheck(raw) {
 }
 
 export async function simPlace(raw) {
-  const v = simCheck(raw);
+  const v = await simCheck(raw);
   if (!v.allowed) { log({ mode: "sim", order: v.order, verdict: "BLOCKED", reason: v.reason }); return { status: "BLOCKED", ...v }; }
   const stop = await humanGate(v.order, loadRules());
   if (stop) { log({ mode: "sim", order: v.order, verdict: "REJECTED", reason: stop }); return { status: "REJECTED", reason: stop, order: v.order }; }

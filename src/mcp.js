@@ -15,7 +15,7 @@ export async function startMcp() {
   const fail = (m) => ({ isError: true, content: [{ type: "text", text: m }] });
   const obj = (properties = {}, required = []) => ({ type: "object", properties, required });
   const ORDER = obj({
-    symbol: { type: "string", description: `Ticker. Simulated: ${SYMBOLS.join(", ")}` },
+    symbol: { type: "string", description: `Ticker. Simulated: any US stock or ETF with a Yahoo Finance price (built in: ${SYMBOLS.join(", ")})` },
     side: { type: "string", enum: ["buy", "sell"] },
     qty: { type: "integer", minimum: 1, description: "Whole shares" },
     limit_price: { type: "number", description: "Optional limit price. Without it the order is a market order." },

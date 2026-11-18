@@ -40,9 +40,23 @@ function rollDay(s, now) {
   if (s.day?.date !== d) s.day = { date: d, startEquity: equityOf(s) };
 }
 
+// Any other US ticker is added on first use from its last real close (Yahoo Finance), so strategies are not
+// limited to the built-in list. Returns false if the ticker has no price.
+export async function addSymbol(sym, timeoutMs = 6000) {
+  const k = String(sym).toUpperCase();
+  if (!/^[A-Z][A-Z0-9.-]{0,9}$/.test(k)) return false;
+  const s0 = load(); if (k in s0.prices) return true;
+  try {
+    const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(k)}?range=1d&interval=1d`, { signal: AbortSignal.timeout(timeoutMs), headers: { "user-agent": "Mozilla/5.0" } });
+    const px = (await r.json())?.chart?.result?.[0]?.meta?.regularMarketPrice;
+    if (!(px > 0)) return false;
+    const s = load(); s.prices[k] = round(px); save(s); return true;
+  } catch { return false; }
+}
+
 export function quote(s, sym) {
   const k = sym.toUpperCase();
-  if (!(k in s.prices)) throw new Error(`unknown symbol ${k}; simulated symbols: ${SYMBOLS.join(", ")}`);
+  if (!(k in s.prices)) throw new Error(`unknown symbol ${k}: no price found for it`);
   return s.prices[k];
 }
 
@@ -54,7 +68,7 @@ export async function seedPrices(timeoutMs = 4000) {
   const s = load(), today = new Date().toISOString().slice(0, 10);
   if (s.seeded === today) return { seeded: false, reason: "already today" };
   const got = {};
-  await Promise.all(SYMBOLS.map(async (k) => {
+  await Promise.all([...new Set([...SYMBOLS, ...Object.keys(s.prices)])].map(async (k) => {
     try {
       const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${k}?range=1d&interval=1d`, { signal: AbortSignal.timeout(timeoutMs), headers: { "user-agent": "Mozilla/5.0" } });
       const px = (await r.json())?.chart?.result?.[0]?.meta?.regularMarketPrice;
